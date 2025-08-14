@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.gam0zing.stage_enchantment.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "stage_enchantment.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
