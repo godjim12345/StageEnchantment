@@ -1,6 +1,5 @@
 package com.gam0zing.stage_enchantment.generator;
 
-import com.gam0zing.stage_enchantment.enchantment.EnchantmentInfo;
 import com.gam0zing.stage_enchantment.utils.DynamicCompiler;
 
 import java.io.*;
@@ -42,7 +41,7 @@ public class MixinClassGenerator {
     }
     public static void writeJavaFile (String src,String className) {
         //这里写想要输出的目录绝对地址
-        File file = new File("D:\\用户\\Dell\\桌面\\k\\" + className + "Mixin.java");
+        File file = new File("D:\\用户\\Dell\\桌面\\你就\\" + className + "Mixin.java");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             bw.write(src);
         } catch (IOException ignored) {
@@ -66,9 +65,12 @@ public class MixinClassGenerator {
             boolean key = false;
             com.gam0zing.stage_enchantment.domin.Constructor myConstructor = null;
             Class<?> superclass = null;
+            boolean isApotheosisClassHook = classPathName.equals(apotheosisClassPath);
             try {
-                //只会获取本类的方法，不会获取父类的方法
-                clazz.getDeclaredMethod(srgName);
+                //只会获取本类的方法，不会获取父类的方法，跳过神话，因为神话那个getMaxLevel有参数
+                if (!isApotheosisClassHook) {
+                    clazz.getDeclaredMethod(srgName);
+                }
             } catch (NoSuchMethodException ignored) {
                 key = true;
                 superclass = clazz.getSuperclass();
@@ -77,18 +79,35 @@ public class MixinClassGenerator {
                         com.gam0zing.stage_enchantment.domin.Constructor(Modifier.toString
                         (constructor.getModifiers()), superclass.getName(),constructor.getParameterTypes());
             }
-            if (key) {
+            if (isApotheosisClassHook) {
+                //处理神话
+                return "package com.gam0zing.stage_enchantment.mixin;\n" +
+                        "\n" +
+                        "import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;\n" +
+                        "import " + classPathName + ";\n" +
+                        "import net.minecraft.world.item.enchantment.Enchantment;\n" +
+                        "import org.spongepowered.asm.mixin.Mixin;\n" +
+                        "import org.spongepowered.asm.mixin.injection.At;\n" +
+                        "import org.spongepowered.asm.mixin.injection.Inject;\n" +
+                        "import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;\n" +
+                        "\n" +
+                        "\n" +
+                        "@Mixin(" + className + ".class)\n" +
+                        "public class " + className + "Mixin {\n" +
+                        "    @Inject(method = \"getMaxLevel\", at = @At(\"RETURN\"), cancellable = true)\n" +
+                        "    private static void getMaxLevelMixin(Enchantment e, CallbackInfoReturnable<Integer> cir) {\n" +
+                        "        int original = cir.getReturnValue();\n" +
+                        "        int newReturn = DynamicEnchantmentManager.getDynamicMax(e, original);\n" +
+                        "        cir.setReturnValue(newReturn);\n" +
+                        "    }\n" +
+                        "}";
+            } else if (key) {
                 return "package com.gam0zing.stage_enchantment.mixin;\n" +
                         "\n" +
                         "import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;\n" +
                         "import " + classPathName + ";\n" +
                         myConstructor.importString + "\n" +
                         "import org.spongepowered.asm.mixin.Mixin;\n" +
-                        "import org.spongepowered.asm.mixin.injection.At;\n" +
-                        "import org.spongepowered.asm.mixin.injection.Inject;\n" +
-                        "import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;\n" +
-                        "\n" +
-                        "import static com.gam0zing.stage_enchantment.generator.MixinClassGenerator.getOriginal;" +
                         "\n" +
                         "\n" +
                         "@Mixin(" + className + ".class)\n" +
@@ -99,11 +118,10 @@ public class MixinClassGenerator {
                         "    @Override\n" +
                         "    public int " + srgName + "() {\n" +
                         "        " + className + " enchantment = (" + className + ") (Object) this;\n" +
-                        "        return DynamicEnchantmentManager.getDynamicMax(enchantment, getOriginal(\"" + classPathName + "\"));\n" +
+                        "        return DynamicEnchantmentManager.getDynamicMax(enchantment, super." + srgName + "());\n" +
                         "    }\n" +
                         "}";
             } else {
-                //todo 处理神话
                 return "package com.gam0zing.stage_enchantment.mixin;\n" +
                         "\n" +
                         "import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;\n" +
@@ -128,15 +146,6 @@ public class MixinClassGenerator {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-    //该方法会在动态生成的类中运用到，返回该类的原始附魔上限值
-    public static int getOriginal (String classPathName) {
-        for (EnchantmentInfo enchantment : enchantments) {
-            if (enchantment.classPathName.equals(classPathName)) {
-                return enchantment.original;
-            }
-        }
-        return 0;
     }
     public static void stop (){
         try {

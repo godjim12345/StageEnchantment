@@ -4,7 +4,8 @@ import com.gam0zing.stage_enchantment.enchantment.EnchantmentInfo;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import static com.gam0zing.stage_enchantment.StageEnchantment.enchantments;
+import static com.gam0zing.stage_enchantment.StageEnchantment.*;
+import static com.gam0zing.stage_enchantment.StageEnchantment.apotheosisClassPath;
 
 /**
  * @author 向毅灵
@@ -18,6 +19,9 @@ public class MixinConfigGenerator {
         JsonArray array = new JsonArray();
         for (EnchantmentInfo enchantment : enchantments) {
             array.add(enchantment.className+"Mixin");
+        }
+        if (haveApotheosis) {
+            array.add(apotheosisClassPath.substring(apotheosisClassPath.lastIndexOf(".")+1) + "Mixin");
         }
         mixinConfig.add("mixins", array);
     }

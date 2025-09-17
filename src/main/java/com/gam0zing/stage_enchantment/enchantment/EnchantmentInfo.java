@@ -10,12 +10,9 @@ public class EnchantmentInfo {
     public String classPathName;
     //类的类名
     public String className;
-    //该附魔的原始附魔上限值（getMaxLevel）
-    public int original;
-    public EnchantmentInfo(String classPathName, String className, int original) {
+    public EnchantmentInfo(String classPathName, String className) {
         this.classPathName = classPathName;
         this.className = className;
-        this.original = original;
     }
 
     @Override
@@ -23,7 +20,6 @@ public class EnchantmentInfo {
         return "EnchantmentInfo{" +
                 "classPathName='" + classPathName + '\'' +
                 ", className='" + className + '\'' +
-                ", original=" + original +
                 '}';
     }
 }

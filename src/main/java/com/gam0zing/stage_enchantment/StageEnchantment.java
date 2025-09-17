@@ -45,6 +45,8 @@ public class StageEnchantment
     public static boolean isNeedCreateJar; //判断mixin是否写完全了
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create(); //工具gson
     public static boolean haveApotheosis = false; //判断有无神话
+    //神话的getMaxLevel方法所在类
+    public static final String apotheosisClassPath = "dev.shadowsoffire.apotheosis.ench.asm.EnchHooks";
     static {
         packageName = StageEnchantment.class.getPackage().getName();
         // /.minecraft/versions/1.20.1-Forge_47.4.1/mods/stage_enchantment-1.0.0.jar#165!/
@@ -122,14 +124,12 @@ public class StageEnchantment
                 return;
             }
         }
-        enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
-                (classPathName.lastIndexOf(".")+1),enchant.getMaxLevel()));
-        /*if (classPathName.startsWith("dev.shadowsoffire.apotheosis")) {
+        if (classPathName.startsWith("dev.shadowsoffire.apotheosis")) {
             haveApotheosis = true;
         } else {
             enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
-                    (classPathName.lastIndexOf(".")+1),enchant.getMaxLevel()));
-        }*/
+                    (classPathName.lastIndexOf(".")+1)));
+        }
     }
     public static boolean isNeedCreateJar () {
         if (isDevelopmentEnvironment) {
