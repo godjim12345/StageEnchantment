@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 import static com.gam0zing.stage_enchantment.StageEnchantment.*;
 import static com.gam0zing.stage_enchantment.utils.ConfusionParser.getMethodSrgName;
+import static com.gam0zing.stage_enchantment.utils.ConfusionParser.isEnchantment;
 
 /**
  * @author 向毅灵
@@ -26,6 +27,7 @@ public class MixinClassGenerator {
     public byte[] generate (String classPathName, String className) {
         this.className = className;
         String src = createSrc(classPathName);
+//        writeJavaFile(src,className);
         return instance.jCodeToClassByte("com.gam0zing.stage_enchantment.mixin." + className + "Mixin", src);
     }
     //编译并加载类
@@ -38,15 +40,26 @@ public class MixinClassGenerator {
             throw new RuntimeException(e);
         }
     }
+    public static void writeJavaFile (String src,String className) {
+        //这里写想要输出的目录绝对地址
+        File file = new File("D:\\用户\\Dell\\桌面\\k\\" + className + "Mixin.java");
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            bw.write(src);
+        } catch (IOException ignored) {
+        }
+    }
     //net.minecraft.world.item.enchantment.ProtectionEnchantment
     public String createSrc (String classPathName) {
         try {
             String srgName = getMethodSrgName(classPathName, "getMaxLevel", "");
             //mixin类的类名
             String mixinClassName = packageName.replace('.','/') + "/mixin/" + className + "Mixin";
-            HashMap<String, String> map = new HashMap<>();
-            map.put("getMaxLevel","L" + classPathName + ";"+ srgName +"()I");
-            enchants.put(mixinClassName,map);
+            //处理神话
+            if (isEnchantment(classPathName)) {
+                HashMap<String, String> map = new HashMap<>();
+                map.put("getMaxLevel","L" + classPathName + ";"+ srgName +"()I");
+                enchants.put(mixinClassName,map);
+            }
             //通过反射找到该类
             Class<?> clazz = Class.forName(classPathName);
             //判断是否这个类有没有getMaxLevel方法，没有就要继承父类写mixin
@@ -90,6 +103,7 @@ public class MixinClassGenerator {
                         "    }\n" +
                         "}";
             } else {
+                //todo 处理神话
                 return "package com.gam0zing.stage_enchantment.mixin;\n" +
                         "\n" +
                         "import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;\n" +

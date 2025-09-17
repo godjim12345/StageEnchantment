@@ -1,5 +1,6 @@
 package com.gam0zing.stage_enchantment.utils;
 
+import com.gam0zing.stage_enchantment.StageEnchantment;
 import com.gam0zing.stage_enchantment.enchantment.EnchantmentInfo;
 import com.gam0zing.stage_enchantment.generator.MixinClassGenerator;
 import com.gam0zing.stage_enchantment.generator.MixinConfigGenerator;
@@ -8,6 +9,7 @@ import com.gam0zing.stage_enchantment.generator.MixinRefmapGenerator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -79,6 +81,20 @@ public class CreateJar {
                         + "/mixin/" + enchantment.className + "Mixin.class");
                 jos.putNextEntry(mixinClassEntry);
                 jos.write(mixinGenerator.generate(enchantment.classPathName,enchantment.className));
+                jos.closeEntry();
+            }
+            Method[] methods = Class.forName("dev.shadowsoffire.apotheosis.ench.asm.EnchHooks").getDeclaredMethods();
+            StringBuilder sb = new StringBuilder();
+            for (Method method : methods) {
+                sb.append(method.getName()).append("--");
+            }
+            LOGGER.info("---hjsada---ghfs--" + sb);
+            //处理神话的mixin
+            if (haveApotheosis) {
+                JarEntry mixinClassEntry = new JarEntry(packageName.replace(".","/")
+                        + "/mixin/EnchHooksMixin.class");
+                jos.putNextEntry(mixinClassEntry);
+                jos.write(mixinGenerator.generate("dev.shadowsoffire.apotheosis.ench.asm.EnchHooks","EnchHooks"));
                 jos.closeEntry();
             }
             // 添加 mixin config 文件

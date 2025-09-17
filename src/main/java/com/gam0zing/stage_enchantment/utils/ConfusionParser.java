@@ -1,10 +1,14 @@
 package com.gam0zing.stage_enchantment.utils;
 
+import com.gam0zing.stage_enchantment.enchantment.EnchantmentInfo;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Objects;
+
+import static com.gam0zing.stage_enchantment.StageEnchantment.enchantments;
 
 
 /**
@@ -45,9 +49,18 @@ public class ConfusionParser {
      */
     //todo 还需要改进
     public static String getMethodSrgName(String classPathName,String methodName,String args) {
-        if (methodName.equals("getMaxLevel") && args.isEmpty()) {
+        if (isEnchantment(classPathName) && methodName.equals("getMaxLevel") && args.isEmpty()) {
             return "m_6586_";
         }
         return methodName;
+    }
+    //判断是否为附魔类，如果为附魔类，只要方法为getMaxLevel，srg名为m_6586_
+    public static boolean isEnchantment (String classPathName) {
+        for (EnchantmentInfo enchantment : enchantments) {
+            if (enchantment.classPathName.equals(classPathName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

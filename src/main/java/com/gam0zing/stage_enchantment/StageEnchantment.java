@@ -44,6 +44,7 @@ public class StageEnchantment
     public static final boolean isDevelopmentEnvironment; //判断是否为开发环境
     public static boolean isNeedCreateJar; //判断mixin是否写完全了
     public static final Gson gson = new GsonBuilder().setPrettyPrinting().create(); //工具gson
+    public static boolean haveApotheosis = false; //判断有无神话
     static {
         packageName = StageEnchantment.class.getPackage().getName();
         // /.minecraft/versions/1.20.1-Forge_47.4.1/mods/stage_enchantment-1.0.0.jar#165!/
@@ -111,9 +112,10 @@ public class StageEnchantment
             }
         }
     }
-    //为了确保不会加重复的信息
+    //为了确保不会加重复的信息，并且检测到神话的附魔，直接跳过
     public static void add(Enchantment enchant) {
         //net.minecraft.world.item.enchantment.ProtectionEnchantment
+        //dev.shadowsoffire.apotheosis.ench.replacements.DefenseEnchant
         String classPathName = enchant.getClass().getName();
         for (EnchantmentInfo enchantment : enchantments) {
             if (enchantment.classPathName.equals(classPathName)) {
@@ -122,6 +124,12 @@ public class StageEnchantment
         }
         enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
                 (classPathName.lastIndexOf(".")+1),enchant.getMaxLevel()));
+        /*if (classPathName.startsWith("dev.shadowsoffire.apotheosis")) {
+            haveApotheosis = true;
+        } else {
+            enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
+                    (classPathName.lastIndexOf(".")+1),enchant.getMaxLevel()));
+        }*/
     }
     public static boolean isNeedCreateJar () {
         if (isDevelopmentEnvironment) {
