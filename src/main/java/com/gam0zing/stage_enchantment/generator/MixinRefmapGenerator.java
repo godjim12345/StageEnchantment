@@ -45,19 +45,21 @@ public class MixinRefmapGenerator {
     //todo 目前必须等待MixinClassGenerator全部执行完毕才行，需要改进，并且这个类、ZipReader没用起来，需要改进
     public static void add() {
         srg = MixinClassGenerator.enchants;
-        JsonObject mappings = new JsonObject();
-        JsonObject date = new JsonObject();
-        for (String mixinClassPath : srg.keySet()) {
-            JsonObject object = new JsonObject();
-            HashMap<String, String> obfuscateMap = srg.get(mixinClassPath);
-            for (String obfuscate : obfuscateMap.keySet()) {
-                object.addProperty(obfuscate,obfuscateMap.get(obfuscate).replace(".","/"));
+        if (!srg.isEmpty()) {
+            JsonObject mappings = new JsonObject();
+            JsonObject date = new JsonObject();
+            for (String mixinClassPath : srg.keySet()) {
+                JsonObject object = new JsonObject();
+                HashMap<String, String> obfuscateMap = srg.get(mixinClassPath);
+                for (String obfuscate : obfuscateMap.keySet()) {
+                    object.addProperty(obfuscate,obfuscateMap.get(obfuscate).replace(".","/"));
+                }
+                mappings.add(mixinClassPath,object);
             }
-            mappings.add(mixinClassPath,object);
+            refmapJson.add("mappings",mappings);
+            date.add("searge", mappings);
+            refmapJson.add("date",date);
         }
-        refmapJson.add("mappings",mappings);
-        date.add("searge", mappings);
-        refmapJson.add("date",date);
     }
 
     /**

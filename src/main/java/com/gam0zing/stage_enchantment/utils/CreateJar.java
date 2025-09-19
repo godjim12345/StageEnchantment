@@ -61,6 +61,11 @@ public class CreateJar {
                     case "stage_enchantment.refmap.json" -> {
                         continue;
                     }
+                    default -> {
+                        if (entry.getName().startsWith(packageName.replace('.','/') + "/mixin/")) {
+                            continue;
+                        }
+                    }
                 }
                 jos.putNextEntry(new JarEntry(entry.getName()));
                 jis.transferTo(jos);
@@ -72,15 +77,7 @@ public class CreateJar {
                 manifest.write(jos);
                 jos.closeEntry();
             }
-            // 添加 mixin 类文件
             MixinClassGenerator mixinGenerator = new MixinClassGenerator();
-            for (EnchantmentInfo enchantment : enchantments) {
-                JarEntry mixinClassEntry = new JarEntry(packageName.replace(".","/")
-                        + "/mixin/" + enchantment.className + "Mixin.class");
-                jos.putNextEntry(mixinClassEntry);
-                jos.write(mixinGenerator.generate(enchantment.classPathName,enchantment.className));
-                jos.closeEntry();
-            }
             //处理神话的mixin
             if (haveApotheosis) {
                 String className = apotheosisClassPath.substring(apotheosisClassPath.lastIndexOf(".")+1);
@@ -89,6 +86,15 @@ public class CreateJar {
                 jos.putNextEntry(mixinClassEntry);
                 jos.write(mixinGenerator.generate(apotheosisClassPath,className));
                 jos.closeEntry();
+            } else {
+                // 添加 mixin 类文件
+                for (EnchantmentInfo enchantment : enchantments) {
+                    JarEntry mixinClassEntry = new JarEntry(packageName.replace(".","/")
+                            + "/mixin/" + enchantment.className + "Mixin.class");
+                    jos.putNextEntry(mixinClassEntry);
+                    jos.write(mixinGenerator.generate(enchantment.classPathName,enchantment.className));
+                    jos.closeEntry();
+                }
             }
             // 添加 mixin config 文件
             JarEntry mixinJsonEntry = new JarEntry("stage_enchantment.mixins.json");
@@ -97,11 +103,13 @@ public class CreateJar {
             jos.write(gson.toJson(MixinConfigGenerator.mixinConfig).getBytes(StandardCharsets.UTF_8));
             jos.closeEntry();
             // 添加 refmap json 文件
-            JarEntry refmapJsonEntry = new JarEntry("stage_enchantment.refmap.json");
-            jos.putNextEntry(refmapJsonEntry);
             MixinRefmapGenerator.add();
-            jos.write(gson.toJson(MixinRefmapGenerator.refmapJson).getBytes(StandardCharsets.UTF_8));
-            jos.closeEntry();
+            if (MixinRefmapGenerator.refmapJson.size() != 0) {
+                JarEntry refmapJsonEntry = new JarEntry("stage_enchantment.refmap.json");
+                jos.putNextEntry(refmapJsonEntry);
+                jos.write(gson.toJson(MixinRefmapGenerator.refmapJson).getBytes(StandardCharsets.UTF_8));
+                jos.closeEntry();
+            }
         }
     }
 }

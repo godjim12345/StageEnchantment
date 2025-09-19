@@ -124,11 +124,10 @@ public class StageEnchantment
                 return;
             }
         }
+        enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
+                (classPathName.lastIndexOf(".")+1)));
         if (classPathName.startsWith("dev.shadowsoffire.apotheosis")) {
             haveApotheosis = true;
-        } else {
-            enchantments.add(new EnchantmentInfo(classPathName,classPathName.substring
-                    (classPathName.lastIndexOf(".")+1)));
         }
     }
     public static boolean isNeedCreateJar () {
@@ -143,13 +142,37 @@ public class StageEnchantment
             mixinConfig = gson.fromJson(json, JsonObject.class);
             //查看json里面有没有mixins这个数组
             if (mixinConfig.has("mixins") && mixinConfig.get("mixins").isJsonArray()) {
-                int size = mixinConfig.getAsJsonArray("mixins").size();
-                return enchantments.size() > size;
+                JsonArray mixins = mixinConfig.getAsJsonArray("mixins");
+                if (haveApotheosis) {
+                    int size = mixins.size();
+                    if (mixins.isEmpty()) {
+                        return true;
+                    }
+                    String string = mixins.get(0).getAsString();
+                    return !(size == 1 && string.equals(apotheosisClassPath.substring
+                            (apotheosisClassPath.lastIndexOf(".")+1) + "Mixin"));
+                } else {
+                    return !isAllEqual(mixins);
+                }
             }
         } catch (IOException e) {
             return false;
         }
         return false;
+    }
+    public static boolean isAllEqual (JsonArray jsonArray) {
+        //可能有重复的
+        ArrayList<String> temp = new ArrayList<>();
+        for (EnchantmentInfo enchantment : enchantments) {
+            temp.add(enchantment.className + "Mixin");
+        }
+        ArrayList<String> json = new ArrayList<>();
+        for (JsonElement element : jsonArray) {
+            json.add(element.getAsString());
+        }
+        Collections.sort(temp);
+        Collections.sort(json);
+        return temp.equals(json);
     }
     private void restartGame() throws IOException {
         Minecraft mc = Minecraft.getInstance();

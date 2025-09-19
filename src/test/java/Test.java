@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.gam0zing.stage_enchantment.StageEnchantment.jarPath;
 
@@ -160,6 +157,21 @@ public class Test {
         date.add("searge", mappings);
         root.add("date",date);
         System.out.println(new Gson().toJson(root));*/
-        System.out.println("k.kl.l".replaceAll("\\.","/"));
+        JsonArray mixins = new JsonArray();
+        mixins.add("r");
+        mixins.add("r");
+        mixins.add("c");
+        // 将 JsonArray 转成 List<String>
+        List<String> listFromJson = new ArrayList<>();
+        for (JsonElement elem : mixins) {
+            listFromJson.add(elem.getAsString()); // 根据元素类型选择 getAsString/getAsInt...
+        }
+        ArrayList<String> list = new ArrayList<>();
+        list.add("r");
+        list.add("c");
+        list.add("r");
+        Collections.sort(list);
+        Collections.sort(listFromJson);
+        System.out.println(listFromJson.equals(list) + mixins.get(0).getAsString());
     }
 }

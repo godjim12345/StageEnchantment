@@ -17,11 +17,12 @@ public class MixinConfigGenerator {
     public static void add() {
         //添加json数组
         JsonArray array = new JsonArray();
-        for (EnchantmentInfo enchantment : enchantments) {
-            array.add(enchantment.className+"Mixin");
-        }
         if (haveApotheosis) {
             array.add(apotheosisClassPath.substring(apotheosisClassPath.lastIndexOf(".")+1) + "Mixin");
+        } else {
+            for (EnchantmentInfo enchantment : enchantments) {
+                array.add(enchantment.className+"Mixin");
+            }
         }
         mixinConfig.add("mixins", array);
     }
