@@ -3,11 +3,11 @@ package com.gam0zing.stage_enchantment;
 import com.gam0zing.stage_enchantment.enchantment.EnchantmentInfo;
 import com.gam0zing.stage_enchantment.generator.MixinClassGenerator;
 import com.gam0zing.stage_enchantment.utils.CreateJar;
+import com.gam0zing.stage_enchantment.utils.JWTParser;
 import com.gam0zing.stage_enchantment.utils.JarResources;
 import com.google.gson.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -29,6 +29,7 @@ import java.util.*;
 
 import static com.gam0zing.stage_enchantment.generator.MixinConfigGenerator.mixinConfig;
 import static com.gam0zing.stage_enchantment.utils.Config.*;
+import static com.gam0zing.stage_enchantment.utils.JWTParser.parseJwt;
 
 @Mod(StageEnchantment.MODID)
 public class StageEnchantment
@@ -47,6 +48,8 @@ public class StageEnchantment
     public static boolean haveApotheosis = false; //判断有无神话
     //神话的getMaxLevel方法所在类
     public static final String apotheosisClassPath = "dev.shadowsoffire.apotheosis.ench.asm.EnchHooks";
+    public static final String launcherProfilesPath; //launcher_profiles.json位置
+    public static boolean isNeedRestart = false;
     static {
         packageName = StageEnchantment.class.getPackage().getName();
         // /.minecraft/versions/1.20.1-Forge_47.4.1/mods/stage_enchantment-1.0.0.jar#165!/
@@ -61,6 +64,15 @@ public class StageEnchantment
         temp = Minecraft.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         minecraftSrgPath = temp.substring(1,temp.lastIndexOf("%"));
         isDevelopmentEnvironment = !jarPath.endsWith(".jar");
+        if (!isDevelopmentEnvironment) {
+            String minecraft = ".minecraft";
+            //:/.../.minecraft
+            launcherProfilesPath = minecraftSrgPath.substring
+                    (0,minecraftSrgPath.lastIndexOf(minecraft) + minecraft.length()) + "/launcher_profiles.json";
+        } else {
+            launcherProfilesPath = "";
+        }
+
     }
 
     public StageEnchantment(FMLJavaModLoadingContext context)
@@ -74,7 +86,9 @@ public class StageEnchantment
                     Path outputJar = Paths.get(CreateJar.newJarPath);
                     //如果目标文件已存在，就覆盖
                     Files.move(outputJar,sourceJar, StandardCopyOption.REPLACE_EXISTING);
-//                    restartGame();
+                    if (isNeedRestart) {
+                        restartGame();
+                    }
                     LOGGER.info("本身 JAR 已替换: {} {}", sourceJar, outputJar);
                 }
             } catch (IOException e) {
@@ -106,11 +120,13 @@ public class StageEnchantment
             if (!switchKey.isEmpty()) {
                 key = Integer.parseInt(switchKey);
             }
-            //todo 完善自动重启
-            if (key == 0) {
-                throw new RuntimeException("更新mixin完毕，请重新启动游戏");
-            } else {
+            if (key == 1) {
                 System.exit(0);
+            } else if (key == 2) {
+                isNeedRestart = true;
+                System.exit(0);
+            } else {
+                throw new RuntimeException("更新mixin完毕，请重新启动游戏");
             }
         }
     }
@@ -175,11 +191,6 @@ public class StageEnchantment
         return temp.equals(json);
     }
     private void restartGame() throws IOException {
-        Minecraft mc = Minecraft.getInstance();
-        User user = mc.getUser();
-        // 账户信息 下面这两个参数必须连网验证（正版）
-        String clientId = user.getClientId().orElse("0");
-        String xuid = "0"; // Forge 1.20.1 不支持 XUID xbox uuid
         // Java 可执行路径
         String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         // JVM 参数
@@ -192,24 +203,33 @@ public class StageEnchantment
         // 其他游戏参数（去掉主类部分）
         String[] parts = fullCommand.split(" ");
         List<String> gameArgs = new ArrayList<>(Arrays.asList(parts).subList(1, parts.length));
+        boolean key = parseJwt(gameArgs.get(gameArgs.indexOf("--accessToken") + 1));
+        //minecraft游戏id硬编码
+        String clientId = "00000000402b5328";
+        String xuid = JWTParser.getValue("xuid"); // Forge 1.20.1 不支持 XUID xbox uuid
         // 拼接启动命令
         List<String> cmd = new ArrayList<>();
         cmd.add(javaBin);
         cmd.addAll(jvmArgs);
         cmd.add("-cp");
         cmd.add(classpath);
-        cmd.add(mainClass);
-        cmd.add("--clientId"); cmd.add(clientId);
-        cmd.add("--xuid"); cmd.add(xuid);
-        gameArgs.remove("--clientId");
+        if (mainClass.endsWith(".jar")) {
+            // 如果是 jar，说明启动器用的是 -jar 模式
+            cmd.add("-jar");
+            cmd.add(mainClass);
+        } else {
+            // 如果是类，说明正常启动 开发者模式用的
+            cmd.add(mainClass);
+        }
+        gameArgs.add(gameArgs.indexOf("--clientId")+1,clientId);
+        if (key) {
+            gameArgs.add(gameArgs.indexOf("--xuid")+1,xuid);
+        } else {
+            gameArgs.remove("--xuid");
+        }
         gameArgs.remove("${clientid}");
-        gameArgs.remove("--xuid");
         gameArgs.remove("${auth_xuid}");
         cmd.addAll(gameArgs);
-        LOGGER.info(cmd.toString());
-        LOGGER.info(jvmArgs.toString());
-        LOGGER.info(gameArgs.toString());
-        System.out.println(cmd);
         // 启动新进程
         new ProcessBuilder(cmd).start();
     }
