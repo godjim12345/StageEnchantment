@@ -16,12 +16,12 @@ import static com.gam0zing.stage_enchantment.StageEnchantment.LOGGER;
 public class Config {
     //:\...\.minecraft\versions\1.20.1-Forge_47.4.1\config
     public static String configDirPath;
-    public static String configFileName = StageEnchantment.MOD_NAME + ".toml";
+    public static String configFileName = name(StageEnchantment.MOD_NAME) + ".toml";
     public static File configFile;
     //0：报错需要玩家自己关闭窗口并重启
     //1：直接退出，不用弄模组，直接重启
-    //2：自动重启
-    public static int switchKey = 0;
+    //2：自动重启（默认值）
+    public static int switchKey = 2;
 
     static {
         configDirPath = FMLPaths.CONFIGDIR.get().toAbsolutePath().toString();
@@ -40,6 +40,12 @@ public class Config {
             } catch (IOException ignored) {
             }
         }
+    }
+    public static String name (String configFileName) {
+        // 在大写字母前加上 - ，再整体转小写
+        return configFileName
+                .replaceAll("([a-z])([A-Z])", "$1-$2")
+                .toLowerCase();
     }
     public static String getValue (String key) {
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))){
