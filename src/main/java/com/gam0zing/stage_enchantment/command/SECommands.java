@@ -40,14 +40,17 @@ public class SECommands {
                                                     int value = IntegerArgumentType.getInteger(context, "value");
                                                     // 错误处理
                                                     if (enchantment == null) {
-                                                        context.getSource().sendFailure(Component.literal("无效的附魔ID！"));
+                                                        context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
                                                         return 0;
                                                     }
                                                     // 执行逻辑
                                                     DynamicEnchantmentManager.addMaxLevel(enchantment, value);
                                                     context.getSource().sendSuccess(() ->
-                                                                    Component.literal("已增加附魔 [" + Component.translatable(enchantment.getDescriptionId()).getString() + "] 的等级上限至 " +
-                                                                            DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment))),
+                                                                    Component.translatable(
+                                                                            "command.enchantmentMaxLevel.add",
+                                                                            Component.translatable(enchantment.getDescriptionId()).getString(), // 附魔名
+                                                                            DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment)) // 数值
+                                                                    ),
                                                             false
                                                     );
                                                     return 1;
@@ -61,12 +64,16 @@ public class SECommands {
                                                     Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
                                                     int value = IntegerArgumentType.getInteger(context, "value");
                                                     if (enchantment == null) {
-                                                        context.getSource().sendFailure(Component.literal("无效的附魔ID！"));
+                                                        context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
                                                         return 0;
                                                     }
                                                     DynamicEnchantmentManager.setMaxLevel(enchantment, value);
                                                     context.getSource().sendSuccess(() ->
-                                                                    Component.literal("已设置附魔 [" + Component.translatable(enchantment.getDescriptionId()).getString() + "] 的等级上限为 " + value),
+                                                                    Component.translatable(
+                                                                            "command.enchantmentMaxLevel.set",
+                                                                            Component.translatable(enchantment.getDescriptionId()).getString(),
+                                                                            value
+                                                                    ),
                                                             false
                                                     );
                                                     return 1;
@@ -79,12 +86,15 @@ public class SECommands {
                                             ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
                                             Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
                                             if (enchantment == null) {
-                                                context.getSource().sendFailure(Component.literal("无效的附魔ID！"));
+                                                context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
                                                 return 0;
                                             }
                                             context.getSource().sendSuccess(() ->
-                                                            Component.literal("附魔 [" + Component.translatable(enchantment.getDescriptionId()).getString() + "] 的等级上限为 " +
-                                                                    DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment))),
+                                                            Component.translatable(
+                                                                    "command.enchantmentMaxLevel.get",
+                                                                    Component.translatable(enchantment.getDescriptionId()).getString(), // 附魔名
+                                                                    DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment)) // 数值
+                                                            ),
                                                     false
                                             );
                                             return 1;

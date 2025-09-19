@@ -23,8 +23,8 @@ public class JWTParser {
     public static boolean parseJwt(String jwt) {
         // JWT 格式: header.payload.signature
         String[] parts = jwt.split("\\.");
+        //不是合法的
         if (parts.length < 2) {
-            System.out.println("不是合法的 JWT: " + jwt);
             return false;
         }
         // 取 payload 部分（第二段）

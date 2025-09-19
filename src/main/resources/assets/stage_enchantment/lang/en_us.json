@@ -1,0 +1,6 @@
+{
+  "command.enchantmentMaxLevel.invalid": "Invalid enchantment ID!",
+  "command.enchantmentMaxLevel.get": "Enchantment [%s] has max level %s",
+  "command.enchantmentMaxLevel.add": "Increased enchantment [%s] max level to %s",
+  "command.enchantmentMaxLevel.set": "Set enchantment [%s] max level to %s"
+}
