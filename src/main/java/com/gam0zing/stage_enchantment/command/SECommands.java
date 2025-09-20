@@ -49,6 +49,7 @@ public class SECommands {
                                                                     Component.translatable(
                                                                             "command.enchantmentMaxLevel.add",
                                                                             Component.translatable(enchantment.getDescriptionId()).getString(), // 附魔名
+                                                                            value,
                                                                             DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment)) // 数值
                                                                     ),
                                                             false

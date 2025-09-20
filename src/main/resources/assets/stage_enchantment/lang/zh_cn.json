@@ -1,6 +1,6 @@
 {
   "command.enchantmentMaxLevel.invalid": "无效的附魔ID！",
   "command.enchantmentMaxLevel.get": "附魔 [%s] 的等级上限为 %s",
-  "command.enchantmentMaxLevel.add": "已增加附魔 [%s] 的等级上限至 %s",
+  "command.enchantmentMaxLevel.add": "附魔 [%s] 的等级上限增加了 %s ，现在为 %s",
   "command.enchantmentMaxLevel.set": "已设置附魔 [%s] 的等级上限为 %s"
 }
