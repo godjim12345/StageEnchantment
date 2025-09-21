@@ -8,7 +8,7 @@ import static com.gam0zing.stage_enchantment.StageEnchantment.*;
 import static com.gam0zing.stage_enchantment.StageEnchantment.apotheosisClassPath;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //mixinConfig.json生成

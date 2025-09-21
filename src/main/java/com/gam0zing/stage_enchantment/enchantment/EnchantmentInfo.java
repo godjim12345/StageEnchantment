@@ -1,7 +1,7 @@
 package com.gam0zing.stage_enchantment.enchantment;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //附魔类的信息

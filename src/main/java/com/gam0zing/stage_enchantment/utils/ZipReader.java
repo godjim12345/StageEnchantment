@@ -8,7 +8,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 

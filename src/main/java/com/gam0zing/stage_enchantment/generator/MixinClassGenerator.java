@@ -12,7 +12,7 @@ import static com.gam0zing.stage_enchantment.utils.ConfusionParser.getMethodSrgN
 import static com.gam0zing.stage_enchantment.utils.ConfusionParser.isEnchantment;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //动态生成mixinClass类，并编译好
@@ -41,7 +41,7 @@ public class MixinClassGenerator {
     }
     public static void writeJavaFile (String src,String className) {
         //这里写想要输出的目录绝对地址
-        File file = new File("D:\\用户\\Dell\\桌面\\你就\\" + className + "Mixin.java");
+        File file = new File("?:\\...\\" + className + "Mixin.java");
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             bw.write(src);
         } catch (IOException ignored) {

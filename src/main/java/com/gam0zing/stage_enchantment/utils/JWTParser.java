@@ -9,10 +9,11 @@ import java.util.Base64;
 import static com.gam0zing.stage_enchantment.StageEnchantment.gson;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 
+//客户端功能
 public class JWTParser {
     private static JsonObject parse;
     /**

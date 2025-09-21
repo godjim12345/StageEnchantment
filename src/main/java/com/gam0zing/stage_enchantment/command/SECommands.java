@@ -14,13 +14,14 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
+//这个指令玩家输入只会在服务端执行
 @Mod.EventBusSubscriber(modid = StageEnchantment.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SECommands {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         var dispatcher = event.getDispatcher();
-
+        //todo 指令的权限，以及map不能同时put
         dispatcher.register(
                 Commands.literal("enchantmentMaxLevel")
                         .then(Commands.argument("enchantment", ResourceLocationArgument.id())

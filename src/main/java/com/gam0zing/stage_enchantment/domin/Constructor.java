@@ -1,7 +1,7 @@
 package com.gam0zing.stage_enchantment.domin;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //构造器的写法

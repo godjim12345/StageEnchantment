@@ -10,11 +10,12 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static com.gam0zing.stage_enchantment.StageEnchantment.jarPath;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 
@@ -58,7 +59,6 @@ public class DynamicCompiler {
                     Files.delete(file); // 删除文件
                     return FileVisitResult.CONTINUE;
                 }
-
                 @Override
                 public @NotNull FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                     Files.delete(dir); // 删除空目录
@@ -164,8 +164,9 @@ public class DynamicCompiler {
         //获取类加载器
         //Java9之后，应用程序和扩展类都不再是 java.net.URLClassLoader 的实例
         //获取包名加类名
-        // /E:/保留/javaLearning/StageEnchantment/build/resources/main/%23196!/
-        // /E:/保留/我的世界/稳定整合包PCL/早期1.21/.minecraft/versions/1.20.1-Forge_47.4.1/mods/stage_enchantment-1.0.0.jar%23165!/
+        // /:/.../StageEnchantment/build/resources/main/%23196!/
+        // /:/.../.minecraft/versions/1.20.1-Forge_47.4.1/mods/stage_enchantment-1.0.0.jar%23165!/
+        // /:/.../1.20.1_forge/mods/StageEnchantment-1.20.1-1.0.0.jar%23109!/
         URL rootUrl = DynamicCompiler.class.getClassLoader().getResource("");
         this.parentClassLoader = new URLClassLoader(new URL[]{rootUrl});
         //在系统temp目录下面创建一个目录
@@ -182,19 +183,40 @@ public class DynamicCompiler {
         StringBuilder sb = new StringBuilder();
         for (URL url : this.parentClassLoader.getURLs()) {
             String p = url.getFile();
-            sb.append(p).append(File.pathSeparator);
+            sb.append(p, 1, p.lastIndexOf("%")).append(File.pathSeparator);
         }
-        //添加mod路径 /*表示该目录下所有jar文件
+        //添加mod路径
         File file = new File(jarPath.substring(0,jarPath.lastIndexOf("/")));
         String[] list = file.list((dir, name) -> name.endsWith(".jar"));
         assert list != null;
         for (String s : list) {
-            sb.append(jarPath, 0, jarPath.lastIndexOf("/")+1).append(s).append(File.pathSeparator);
+            sb.append(jarPath, 0, jarPath.lastIndexOf("/") + 1).append(s).append(File.pathSeparator);
         }
-        sb.append(System.getProperty("java.class.path")).append(File.pathSeparator);
-        sb.append(StageEnchantment.minecraftSrgPath).append(File.pathSeparator);
+        //支持库jar
+        addPath(sb,System.getProperty("java.class.path"));
+        if (!StageEnchantment.isServer) {
+            sb.append(StageEnchantment.minecraftSrgPath).append(File.pathSeparator);
+        }
         sb.append(tempClassPath);
         this.classpath = sb.toString();
+    }
+    public void addPath (StringBuilder sb,String classpath) {
+        //肯定是服务端
+        if (classpath.equals(".")) {
+            File mods = new File(jarPath.substring(0,jarPath.lastIndexOf("/")));
+            try (Stream<Path> stream = Files.walk(Paths.get(mods.getParent() + "\\libraries"))) {
+                for (Path jar : stream
+                        .filter(Files::isRegularFile) //只要文件
+                        .filter(p -> p.toString().endsWith(".jar")) // 筛选 jar
+                        .toList()) {
+                    sb.append(jar.toAbsolutePath()).append(File.pathSeparator);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            sb.append(classpath).append(File.pathSeparator);
+        }
     }
     //输出编译错误信息
     private String compilePrint(Diagnostic<? extends JavaFileObject> diagnostic) {

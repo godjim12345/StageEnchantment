@@ -9,7 +9,7 @@ import java.util.zip.ZipEntry;
 import static com.gam0zing.stage_enchantment.StageEnchantment.jarPath;
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //自身jar包资源获取

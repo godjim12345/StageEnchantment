@@ -12,15 +12,16 @@ import static com.gam0zing.stage_enchantment.StageEnchantment.enchantments;
 
 
 /**
- * @author 向毅灵
+ * @author xWode
  * @version 1.0
  */
 //混淆解析器，mc混淆逻辑：mojang只提供类名和方法名全部混淆的jar包（混淆后的名字称OfficialName），
 // 社区（如forge）统一标识为srg名（类名变回来，方法名属性名变了但还是难懂，如：m_6586_，所以mixin要写refmap.json，写的就是这个srg名），
 // 接下来就是为了开发者，在开发环境下再次转mcp名（类名，方法名，属性名全部人能看懂的英文），在开发环境下不会去混淆，
-// 所以导师开发环境下加mod会识别不了，报错，因为mod是转srg名了，混淆了，导致很多方法名识别不了。srg名特点：每个版本都对应同一个SRG名
+// 所以导致开发环境下加mod会识别不了，报错，因为mod是转srg名了，混淆了，导致很多方法名识别不了。srg名特点：每个版本都对应同一个SRG名
 public class ConfusionParser {
     public static final HashMap<String,String> officialClassNames = new HashMap<>();
+    @Deprecated
     public static void obf () {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(Objects.requireNonNull
                 (JarResources.getResource("server_mappings.txt"))))){
