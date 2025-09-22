@@ -36,19 +36,22 @@ import static com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManag
 //服务端功能 处理map数据的转入与转发
 @Mod.EventBusSubscriber(modid = StageEnchantment.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class JsonToMapDateHandler {
-    private static final String jsonName = StageEnchantment.MODID + "-ench.json";
-    private static File jsonFile;
+    private static final String enchJsonName = StageEnchantment.MODID + "-ench.json";
+    private static final String commandJsonName = StageEnchantment.MODID + "-commands.json";
+    private static File enchJsonFile;
+    private static File commandJsonFile;
     //执行一次，在世界创建完成玩家进入前执行，玩家进入多人游戏服务器不会触发
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         MinecraftServer server = event.getServer();
         File worldDir = server.getWorldPath(LevelResource.ROOT).toFile();
         // serverconfig 文件夹下面的json文件
-        jsonFile = new File(worldDir, "serverconfig/" + jsonName);
-        if (jsonFile.exists()) {
-            try (InputStream in = new FileInputStream(jsonFile)){
+        enchJsonFile = new File(worldDir, "serverconfig/" + enchJsonName);
+        commandJsonFile = new File(worldDir, "serverconfig/" + commandJsonName);
+        if (enchJsonFile.exists()) {
+            try (InputStream in = new FileInputStream(enchJsonFile)){
                 String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-                //json的内容格式为，保证不会重复：
+                //enchJson的内容格式为，保证不会重复：
                 //{
                 //  "minecraft:sharpness": 5,
                 //  "stageenchantment:my_enchant": 3
@@ -70,19 +73,19 @@ public class JsonToMapDateHandler {
                 map.put(id.toString(), maxLevel);
                 SERVER_OVERRIDES.put(enchant, maxLevel);
             });
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(jsonFile))){
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(enchJsonFile))){
                 bw.write(gson.toJson(map));
             } catch (IOException ignored) {
                 LOGGER.warn("没有生成附魔信息json文件");
             }
         }
-        if (jsonFile.setReadOnly()) {
+        if (enchJsonFile.setReadOnly()) {
             LOGGER.info("json文件保护已开");
         }
     }
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
-        if (jsonFile.setWritable(true)) {
+        if (enchJsonFile.setWritable(true)) {
             LOGGER.info("json文件保护已关");
         }
         HashMap<String, Integer> map = new HashMap<>();
@@ -92,7 +95,7 @@ public class JsonToMapDateHandler {
             int maxLevel = getMaxLevel(enchant);
             map.put(id.toString(), maxLevel);
         });
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(jsonFile))){
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(enchJsonFile))){
             bw.write(gson.toJson(map));
         } catch (IOException ignored) {
             LOGGER.warn("附魔信息json文件写入出现错误");

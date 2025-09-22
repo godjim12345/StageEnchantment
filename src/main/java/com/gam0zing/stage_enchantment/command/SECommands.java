@@ -3,6 +3,7 @@ package com.gam0zing.stage_enchantment.command;
 import com.gam0zing.stage_enchantment.StageEnchantment;
 import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
@@ -23,7 +24,7 @@ public class SECommands {
         var dispatcher = event.getDispatcher();
         //todo 指令的权限，以及map不能同时put
         dispatcher.register(
-                Commands.literal("enchantmentMaxLevel")
+                Commands.literal(StageEnchantment.MODID)
                         .then(Commands.argument("enchantment", ResourceLocationArgument.id())
                                 .suggests((context, builder) ->  // 附魔ID补全
                                         SharedSuggestionProvider.suggestResource(
@@ -101,6 +102,85 @@ public class SECommands {
                                             );
                                             return 1;
                                         })
+                                )
+                        )
+                        //create string,destroy string,query(id，有无触发),addEffect id ench int,removeEffect id ench,execute id,unexecute id
+                        .then(Commands.literal("command")
+                                .then(Commands.literal("create").then(Commands.argument("id", StringArgumentType.string())
+                                                .executes(context -> {
+                                                    String id = StringArgumentType.getString(context, "id");
+
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("destroy").then(Commands.argument("id", StringArgumentType.string())
+                                                .executes(context -> {
+                                                    String id = StringArgumentType.getString(context, "id");
+
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("query")
+                                        .executes(commandContext -> {
+
+                                            return 1;
+                                        })
+                                )
+                                .then(Commands.literal("addEffect").then(Commands.argument("id",StringArgumentType.string())
+                                                .then(Commands.argument("enchantment", ResourceLocationArgument.id())
+                                                        .suggests((context, builder) ->  // 附魔ID补全
+                                                                SharedSuggestionProvider.suggestResource(
+                                                                        ForgeRegistries.ENCHANTMENTS.getKeys(),
+                                                                        builder
+                                                                )
+                                                        ).then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
+                                                                .executes(context -> {
+                                                                    String id = StringArgumentType.getString(context, "id");
+                                                                    ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
+                                                                    Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
+                                                                    int value = IntegerArgumentType.getInteger(context, "value");
+
+
+
+                                                                    return 1;
+                                                                })
+                                                        )
+                                                )
+                                        )
+                                )
+                                .then(Commands.literal("removeEffect").then(Commands.argument("id",StringArgumentType.string())
+                                        .then(Commands.argument("enchantment", ResourceLocationArgument.id())
+                                                .suggests((context, builder) ->  // 附魔ID补全
+                                                        SharedSuggestionProvider.suggestResource(
+                                                                ForgeRegistries.ENCHANTMENTS.getKeys(),
+                                                                builder
+                                                        )
+                                                ).executes(context -> {
+                                                    String id = StringArgumentType.getString(context, "id");
+                                                    ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
+                                                    Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
+
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("execute")).then(Commands.argument("id", StringArgumentType.string())
+                                                .executes(context -> {
+                                                    String id = StringArgumentType.getString(context, "id");
+
+                                                    return 1;
+                                                })
+                                        )
+                                )
+                                .then(Commands.literal("unexecute").then(Commands.argument("id", StringArgumentType.string())
+                                                .executes(context -> {
+                                                    String id = StringArgumentType.getString(context, "id");
+
+                                                    return 1;
+                                                })
+                                        )
                                 )
                         )
         );

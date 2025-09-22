@@ -1,6 +1,7 @@
 package com.gam0zing.stage_enchantment.enchantment;
 
 import com.gam0zing.stage_enchantment.StageEnchantment;
+import com.gam0zing.stage_enchantment.command_pattern.ICommand;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.lang.reflect.InvocationTargetException;
@@ -12,6 +13,8 @@ import static com.gam0zing.stage_enchantment.events.CreativeTabRefreshHandler.fl
 import static com.gam0zing.stage_enchantment.events.JsonToMapDateHandler.syncToAllPlayers;
 
 public class DynamicEnchantmentManager {
+    //命令map
+    public static final Map<String,ICommand> COMMANDS = new ConcurrentHashMap<>();
     // 服务端存储的附魔等级覆盖 线程安全的Map
     //允许在遍历时 put/remove，不会报错
     public static final Map<Enchantment, Integer> SERVER_OVERRIDES = new ConcurrentHashMap<>();
