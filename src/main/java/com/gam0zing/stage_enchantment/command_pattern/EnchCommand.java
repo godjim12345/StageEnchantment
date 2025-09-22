@@ -4,6 +4,7 @@ package com.gam0zing.stage_enchantment.command_pattern;
 import com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager;
 import net.minecraft.world.item.enchantment.Enchantment;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /// 使用这个Command的要求：
@@ -16,8 +17,8 @@ public class EnchCommand implements ICommand {
     private final Map<Enchantment, Integer> effects;
     private boolean executed;
 
-    public EnchCommand(Map<Enchantment, Integer> effects) {
-        this.effects = effects;
+    public EnchCommand() {
+        this.effects = new HashMap<>();
         this.executed = false;
     }
 
@@ -49,30 +50,48 @@ public class EnchCommand implements ICommand {
         return true;
     }
 
+    @Override
+    public Map<Enchantment, Integer> getEffects() {
+        return effects;
+    }
+
+    @Override
+    public boolean getCurrent() {
+        return executed;
+    }
+
     //添加或修改对应附魔的效果并重新应用
     //加在指令里
-    public void addEffect(Enchantment ench, Integer value) {
+    /// @return 添加新效果返回 true，覆盖原有效果返回 false
+    @Override
+    public boolean setEffect(Enchantment ench, Integer value) {
 
         boolean flag = this.executed;
 
         if (flag) unexecute();
 
-        effects.put(ench, value);
+        var retValue = effects.put(ench, value);
 
         if (flag) execute();
+
+        return retValue == null;
     }
 
     //删除对应附魔的效果并重新应用
     //加在指令里
-    public void removeEffect(Enchantment ench) {
+    /// @return 删除成功返回 true，删除失败返回 false
+    @Override
+    public boolean removeEffect(Enchantment ench) {
 
         boolean flag = this.executed;
 
         if (flag) unexecute();
 
-        effects.remove(ench);
+        var retValue = effects.remove(ench);
 
         if (flag) execute();
+
+        return retValue != null;
     }
 
     private void doEffect(Enchantment ench, Integer value) {

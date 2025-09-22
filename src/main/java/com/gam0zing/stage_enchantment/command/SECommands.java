@@ -15,170 +15,259 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
-//这个指令玩家输入只会在服务端执行
 @Mod.EventBusSubscriber(modid = StageEnchantment.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class SECommands {
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         var dispatcher = event.getDispatcher();
-        //todo 指令的权限，以及map不能同时put
+
         dispatcher.register(
                 Commands.literal(StageEnchantment.MODID)
-                        .then(Commands.argument("enchantment", ResourceLocationArgument.id())
-                                .suggests((context, builder) ->  // 附魔ID补全
-                                        SharedSuggestionProvider.suggestResource(
-                                                ForgeRegistries.ENCHANTMENTS.getKeys(),
-                                                builder
+                        // fastChange 分支（与 command 并列）
+                        .then(Commands.literal("fastChange")
+                                .then(Commands.argument("enchantment", ResourceLocationArgument.id())
+                                        .suggests((context, builder) ->
+                                                SharedSuggestionProvider.suggestResource(
+                                                        ForgeRegistries.ENCHANTMENTS.getKeys(),
+                                                        builder
+                                                )
                                         )
-                                )
-                                // add/set 分支
-                                .then(Commands.literal("add")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
+                                        // add 分支
+                                        .then(Commands.literal("add")
+                                                .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
+                                                        .executes(context -> {
+                                                            ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
+                                                            Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
+                                                            int value = IntegerArgumentType.getInteger(context, "value");
+                                                            if (enchantment == null) {
+                                                                context.getSource().sendFailure(Component.translatable("command.maxLevel.invalid"));
+                                                                return 0;
+                                                            }
+                                                            DynamicEnchantmentManager.addMaxLevel(enchantment, value);
+                                                            context.getSource().sendSuccess(() ->
+                                                                            Component.translatable(
+                                                                                    "command.maxLevel.add",
+                                                                                    Component.translatable(enchantment.getDescriptionId()).getString(),
+                                                                                    value,
+                                                                                    DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment))
+                                                                            ),
+                                                                    false
+                                                            );
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                        // set 分支
+                                        .then(Commands.literal("set")
+                                                .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
+                                                        .executes(context -> {
+                                                            ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
+                                                            Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
+                                                            int value = IntegerArgumentType.getInteger(context, "value");
+                                                            if (enchantment == null) {
+                                                                context.getSource().sendFailure(Component.translatable("command.maxLevel.invalid"));
+                                                                return 0;
+                                                            }
+                                                            DynamicEnchantmentManager.setMaxLevel(enchantment, value);
+                                                            context.getSource().sendSuccess(() ->
+                                                                            Component.translatable(
+                                                                                    "command.maxLevel.set",
+                                                                                    Component.translatable(enchantment.getDescriptionId()).getString(),
+                                                                                    value
+                                                                            ),
+                                                                    false
+                                                            );
+                                                            return 1;
+                                                        })
+                                                )
+                                        )
+                                        // get 分支
+                                        .then(Commands.literal("get")
                                                 .executes(context -> {
-                                                    // 参数解析逻辑
                                                     ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
                                                     Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
-                                                    int value = IntegerArgumentType.getInteger(context, "value");
-                                                    // 错误处理
                                                     if (enchantment == null) {
-                                                        context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
+                                                        context.getSource().sendFailure(Component.translatable("command.maxLevel.invalid"));
                                                         return 0;
                                                     }
-                                                    // 执行逻辑
-                                                    DynamicEnchantmentManager.addMaxLevel(enchantment, value);
                                                     context.getSource().sendSuccess(() ->
                                                                     Component.translatable(
-                                                                            "command.enchantmentMaxLevel.add",
-                                                                            Component.translatable(enchantment.getDescriptionId()).getString(), // 附魔名
-                                                                            value,
-                                                                            DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment)) // 数值
-                                                                    ),
-                                                            false
-                                                    );
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(Commands.literal("set")
-                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
-                                                .executes(context -> {
-                                                    ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
-                                                    Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
-                                                    int value = IntegerArgumentType.getInteger(context, "value");
-                                                    if (enchantment == null) {
-                                                        context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
-                                                        return 0;
-                                                    }
-                                                    DynamicEnchantmentManager.setMaxLevel(enchantment, value);
-                                                    context.getSource().sendSuccess(() ->
-                                                                    Component.translatable(
-                                                                            "command.enchantmentMaxLevel.set",
+                                                                            "command.maxLevel.get",
                                                                             Component.translatable(enchantment.getDescriptionId()).getString(),
-                                                                            value
+                                                                            DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment))
                                                                     ),
                                                             false
                                                     );
                                                     return 1;
                                                 })
                                         )
-                                )
-                                // get 分支（没有 value 参数）
-                                .then(Commands.literal("get")
-                                        .executes(context -> {
-                                            ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
-                                            Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
-                                            if (enchantment == null) {
-                                                context.getSource().sendFailure(Component.translatable("command.enchantmentMaxLevel.invalid"));
-                                                return 0;
-                                            }
-                                            context.getSource().sendSuccess(() ->
-                                                            Component.translatable(
-                                                                    "command.enchantmentMaxLevel.get",
-                                                                    Component.translatable(enchantment.getDescriptionId()).getString(), // 附魔名
-                                                                    DynamicEnchantmentManager.getDynamicMax(enchantment, DynamicEnchantmentManager.getMaxLevel(enchantment)) // 数值
-                                                            ),
-                                                    false
-                                            );
-                                            return 1;
-                                        })
                                 )
                         )
-                        //create string,destroy string,query(id，有无触发),addEffect id ench int,removeEffect id ench,execute id,unexecute id
+                        // command 分支（与 fastChange 并列）
                         .then(Commands.literal("command")
-                                .then(Commands.literal("create").then(Commands.argument("id", StringArgumentType.string())
+                                .then(Commands.literal("create")
+                                        .then(Commands.argument("id", StringArgumentType.string())
                                                 .executes(context -> {
                                                     String id = StringArgumentType.getString(context, "id");
-
-                                                    return 1;
+                                                    var ret = DynamicEnchantmentManager.createCommand(id);
+                                                    if (!ret) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.create.failure", id));
+                                                        return 0;
+                                                    } else {
+                                                        context.getSource().sendSuccess(() -> Component.translatable("command.command.create.success", id), false);
+                                                        return 1;
+                                                    }
                                                 })
                                         )
                                 )
-                                .then(Commands.literal("destroy").then(Commands.argument("id", StringArgumentType.string())
+                                .then(Commands.literal("destroy")
+                                        .then(Commands.argument("id", StringArgumentType.string())
                                                 .executes(context -> {
                                                     String id = StringArgumentType.getString(context, "id");
-
-                                                    return 1;
+                                                    var ret = DynamicEnchantmentManager.destroyCommand(id);
+                                                    if (!ret) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.destroy.failure"));
+                                                        return 0;
+                                                    } else {
+                                                        context.getSource().sendSuccess(() -> Component.translatable("command.command.destroy.success", id), false);
+                                                        return 1;
+                                                    }
                                                 })
                                         )
                                 )
                                 .then(Commands.literal("query")
-                                        .executes(commandContext -> {
-
+                                        .executes(context -> {
+                                            int count = DynamicEnchantmentManager.COMMANDS.size();
+                                            if (count > 0) {
+                                                String head = String.format("%-12s %-10s", "ID", "Executed");
+                                                context.getSource().sendSystemMessage(Component.literal(head));
+                                                DynamicEnchantmentManager.COMMANDS.forEach((key, value) -> {
+                                                    String line = String.format("%-12s %-10s", key, value.getCurrent());
+                                                    context.getSource().sendSystemMessage(Component.literal(line));
+                                                });
+                                            }
+                                            context.getSource().sendSuccess(() -> Component.translatable("command.command.query.success", count), false);
                                             return 1;
                                         })
                                 )
-                                .then(Commands.literal("addEffect").then(Commands.argument("id",StringArgumentType.string())
+                                .then(Commands.literal("addEffect")
+                                        .then(Commands.argument("id", StringArgumentType.string())
                                                 .then(Commands.argument("enchantment", ResourceLocationArgument.id())
-                                                        .suggests((context, builder) ->  // 附魔ID补全
+                                                        .suggests((context, builder) ->
                                                                 SharedSuggestionProvider.suggestResource(
                                                                         ForgeRegistries.ENCHANTMENTS.getKeys(),
                                                                         builder
                                                                 )
-                                                        ).then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
+                                                        )
+                                                        .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
                                                                 .executes(context -> {
                                                                     String id = StringArgumentType.getString(context, "id");
                                                                     ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
                                                                     Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
                                                                     int value = IntegerArgumentType.getInteger(context, "value");
-
-
-
-                                                                    return 1;
+                                                                    if (enchantment == null) {
+                                                                        context.getSource().sendFailure(Component.translatable("command.command.setEffect.invalidEnchantment"));
+                                                                        return 0;
+                                                                    }
+                                                                    var ret = DynamicEnchantmentManager.setEffect(id, enchantment, value);
+                                                                    if (ret == -1) {
+                                                                        context.getSource().sendFailure(Component.translatable("command.command.setEffect.failure"));
+                                                                        return 0;
+                                                                    } else if (ret == 0) {
+                                                                        String showValue = (value > 0 ? "+" : "") + value;
+                                                                        context.getSource().sendSuccess(() -> Component.translatable(
+                                                                                "command.command.setEffect.replace",
+                                                                                id,
+                                                                                Component.translatable(enchantment.getDescriptionId()).getString(),
+                                                                                showValue), false);
+                                                                        return 1;
+                                                                    } else {
+                                                                        String showValue = (value > 0 ? "+" : "") + value;
+                                                                        context.getSource().sendSuccess(() -> Component.translatable(
+                                                                                "command.command.setEffect.new",
+                                                                                id,
+                                                                                Component.translatable(enchantment.getDescriptionId()).getString(),
+                                                                                showValue), false);
+                                                                        return 1;
+                                                                    }
                                                                 })
                                                         )
                                                 )
                                         )
                                 )
-                                .then(Commands.literal("removeEffect").then(Commands.argument("id",StringArgumentType.string())
-                                        .then(Commands.argument("enchantment", ResourceLocationArgument.id())
-                                                .suggests((context, builder) ->  // 附魔ID补全
-                                                        SharedSuggestionProvider.suggestResource(
-                                                                ForgeRegistries.ENCHANTMENTS.getKeys(),
-                                                                builder
+                                .then(Commands.literal("removeEffect")
+                                        .then(Commands.argument("id", StringArgumentType.string())
+                                                .then(Commands.argument("enchantment", ResourceLocationArgument.id())
+                                                        .suggests((context, builder) ->
+                                                                SharedSuggestionProvider.suggestResource(
+                                                                        ForgeRegistries.ENCHANTMENTS.getKeys(),
+                                                                        builder
+                                                                )
                                                         )
-                                                ).executes(context -> {
+                                                        .executes(context -> {
+                                                            String id = StringArgumentType.getString(context, "id");
+                                                            ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
+                                                            Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
+                                                            if (enchantment == null) {
+                                                                context.getSource().sendFailure(Component.translatable("command.command.removeEffect.invalidEnchantment"));
+                                                                return 0;
+                                                            }
+                                                            var ret = DynamicEnchantmentManager.removeEffect(id, enchantment);
+                                                            if (!ret) {
+                                                                context.getSource().sendFailure(Component.translatable("command.command.removeEffect.failure"));
+                                                                return 0;
+                                                            } else {
+                                                                context.getSource().sendSuccess(() -> Component.translatable("command.command.removeEffect.success", id, Component.translatable(enchantment.getDescriptionId()).getString()), false);
+                                                                return 1;
+                                                            }
+                                                        })
+                                                )
+                                        )
+                                )
+                                .then(Commands.literal("execute")
+                                        .then(Commands.argument("id", StringArgumentType.string())
+                                                .executes(context -> {
                                                     String id = StringArgumentType.getString(context, "id");
-                                                    ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
-                                                    Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(enchantmentId);
-
-                                                    return 1;
+                                                    var ret = DynamicEnchantmentManager.execute(id);
+                                                    if (ret == -1) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.execute.invalid"));
+                                                        return 0;
+                                                    } else if (ret == 0) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.execute.failure"));
+                                                        return 0;
+                                                    } else {
+                                                        DynamicEnchantmentManager.COMMANDS.get(id).getEffects().forEach((key, value) -> {
+                                                            String showValue = (value > 0 ? "+" : "") + value;
+                                                            String line = "[" + Component.translatable(key.getDescriptionId()).getString() + "]" + " " + Component.translatable("command.command.execute.maxLevel").getString() + " " + showValue;
+                                                            context.getSource().sendSystemMessage(Component.literal(line));
+                                                        });
+                                                        context.getSource().sendSuccess(() -> Component.translatable("command.command.execute.success", id), false);
+                                                        return 1;
+                                                    }
                                                 })
                                         )
                                 )
-                                .then(Commands.literal("execute")).then(Commands.argument("id", StringArgumentType.string())
+                                .then(Commands.literal("unexecute")
+                                        .then(Commands.argument("id", StringArgumentType.string())
                                                 .executes(context -> {
                                                     String id = StringArgumentType.getString(context, "id");
-
-                                                    return 1;
-                                                })
-                                        )
-                                )
-                                .then(Commands.literal("unexecute").then(Commands.argument("id", StringArgumentType.string())
-                                                .executes(context -> {
-                                                    String id = StringArgumentType.getString(context, "id");
-
-                                                    return 1;
+                                                    var ret = DynamicEnchantmentManager.unexecute(id);
+                                                    if (ret == -1) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.unexecute.invalid"));
+                                                        return 0;
+                                                    } else if (ret == 0) {
+                                                        context.getSource().sendFailure(Component.translatable("command.command.unexecute.failure"));
+                                                        return 0;
+                                                    } else {
+                                                        DynamicEnchantmentManager.COMMANDS.get(id).getEffects().forEach((key, value) -> {
+                                                            String showValue = (-value > 0 ? "+" : "") + -value;
+                                                            String line = "[" + Component.translatable(key.getDescriptionId()).getString() + "]" + " " + Component.translatable("command.command.unexecute.maxLevel").getString() + " " + showValue;
+                                                            context.getSource().sendSystemMessage(Component.literal(line));
+                                                        });
+                                                        context.getSource().sendSuccess(() -> Component.translatable("command.command.unexecute.success", id), false);
+                                                        return 1;
+                                                    }
                                                 })
                                         )
                                 )

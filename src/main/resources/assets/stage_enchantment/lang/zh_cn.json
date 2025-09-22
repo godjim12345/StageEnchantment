@@ -1,6 +1,27 @@
 {
-  "command.enchantmentMaxLevel.invalid": "无效的附魔ID！",
-  "command.enchantmentMaxLevel.get": "附魔 [%s] 的等级上限为 %s",
-  "command.enchantmentMaxLevel.add": "附魔 [%s] 的等级上限增加了 %s ，现在为 %s",
-  "command.enchantmentMaxLevel.set": "已设置附魔 [%s] 的等级上限为 %s"
+  "command.maxLevel.invalid": "无效的附魔ID！",
+  "command.maxLevel.get": "附魔 [%s] 的等级上限为 %s",
+  "command.maxLevel.add": "附魔 [%s] 的等级上限增加了 %s ，现在为 %s",
+  "command.maxLevel.set": "已设置附魔 [%s] 的等级上限为 %s",
+
+  "command.command.create.failure": "附魔命令ID [%s] 已被占用!",
+  "command.command.create.success": "创建了ID为 [%s] 的附魔命令",
+  "command.command.destroy.failure": "无效的附魔命令ID!",
+  "command.command.destroy.success": "销毁了ID为 [%s] 的附魔命令",
+  "command.command.query.success": "查询到总共 %s 个附魔命令",
+  "command.command.setEffect.invalidEnchantment": "无效的附魔ID！",
+  "command.command.setEffect.failure": "无效的附魔命令ID！",
+  "command.command.setEffect.replace": "将附魔命令 [%s] 对 [%s] 的效果替换为了最大等级 %s",
+  "command.command.setEffect.new": "在附魔命令 [%s] 中添加了对 [%s] 最大等级 %s 的效果",
+  "command.command.removeEffect.invalidEnchantment": "无效的附魔ID！",
+  "command.command.removeEffect.failure": "无效的附魔命令ID！",
+  "command.command.removeEffect.success": "移除了附魔命令 [%s] 对 [%s] 的效果",
+  "command.command.execute.invalid": "无效的附魔命令ID！",
+  "command.command.execute.failure": "附魔命令无法二次执行！",
+  "command.command.execute.maxLevel": "最大等级",
+  "command.command.execute.success": "执行了附魔命令 [%s]",
+  "command.command.unexecute.invalid": "无效的附魔命令ID！",
+  "command.command.unexecute.failure": "附魔命令无法二次撤销！",
+  "command.command.unexecute.maxLevel": "最大等级",
+  "command.command.unexecute.success": "撤销了附魔命令 [%s]"
 }

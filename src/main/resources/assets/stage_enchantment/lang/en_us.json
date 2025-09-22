@@ -1,6 +1,27 @@
 {
-  "command.enchantmentMaxLevel.invalid": "Invalid enchantment ID!",
-  "command.enchantmentMaxLevel.get": "The max level of enchantment [%s] is %s",
-  "command.enchantmentMaxLevel.add": "The max level of enchantment [%s] has been increased by %s, now it is %s",
-  "command.enchantmentMaxLevel.set": "The max level of enchantment [%s] has been set to %s"
+  "command.maxLevel.invalid": "Invalid enchantment ID!",
+  "command.maxLevel.get": "The max level of enchantment [%s] is %s",
+  "command.maxLevel.add": "The max level of enchantment [%s] has been increased by %s, now it is %s",
+  "command.maxLevel.set": "The max level of enchantment [%s] has been set to %s",
+
+  "command.command.create.failure": "The enchCommand id [%s] has already been taken!",
+  "command.command.create.success": "EnchCommand [%s] created",
+  "command.command.destroy.failure": "Invalid enchCommand ID!",
+  "command.command.destroy.success": "EnchCommand [%s] destroyed",
+  "command.command.query.success": "Found a total of %s enchCommands",
+  "command.command.setEffect.invalidEnchantment": "Invalid enchantment ID!",
+  "command.command.setEffect.failure": "Invalid enchCommand ID!",
+  "command.command.setEffect.replace": "Replaced effect of enchCommand [%s] on [%s] with max level %s",
+  "command.command.setEffect.new": "Added effect on [%s] with max level %s to enchCommand [%s]",
+  "command.command.removeEffect.invalidEnchantment": "Invalid enchantment ID!",
+  "command.command.removeEffect.failure": "Invalid enchCommand ID!",
+  "command.command.removeEffect.success": "Removed effect of enchCommand [%s] on [%s]",
+  "command.command.execute.invalid": "Invalid enchCommand ID!",
+  "command.command.execute.failure": "EnchCommand cannot be executed twice!",
+  "command.command.execute.maxLevel": "max level",
+  "command.command.execute.success": "Executed enchCommand [%s]",
+  "command.command.unexecute.invalid": "Invalid enchCommand ID!",
+  "command.command.unexecute.failure": "EnchCommand cannot be unexecuted twice!",
+  "command.command.unexecute.maxLevel": "max level",
+  "command.command.unexecute.success": "Unexecuted enchCommand [%s]"
 }
