@@ -1,0 +1,15 @@
+{
+  "id_1": {
+    "executed": true,
+    "effects": {
+      "minecraft:sharpness": 5,
+      "minecraft:unbreaking": 3
+    }
+  },
+  "id_2": {
+    "executed": false,
+    "effects": {
+      "minecraft:fortune": 2
+    }
+  }
+}

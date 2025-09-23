@@ -1,6 +1,8 @@
 package com.gam0zing.stage_enchantment.events;
 
 import com.gam0zing.stage_enchantment.StageEnchantment;
+import com.gam0zing.stage_enchantment.command_pattern.EnchCommand;
+import com.gam0zing.stage_enchantment.command_pattern.ICommand;
 import com.gam0zing.stage_enchantment.network.NetworkHandler;
 import com.gam0zing.stage_enchantment.network.packe.SyncEnchantmentPacket;
 import com.google.gson.JsonElement;
@@ -26,8 +28,7 @@ import java.util.Map;
 
 import static com.gam0zing.stage_enchantment.StageEnchantment.LOGGER;
 import static com.gam0zing.stage_enchantment.StageEnchantment.gson;
-import static com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager.SERVER_OVERRIDES;
-import static com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager.getMaxLevel;
+import static com.gam0zing.stage_enchantment.enchantment.DynamicEnchantmentManager.*;
 
 /**
  * @author xWode
@@ -48,6 +49,50 @@ public class JsonToMapDateHandler {
         // serverconfig 文件夹下面的json文件
         enchJsonFile = new File(worldDir, "serverconfig/" + enchJsonName);
         commandJsonFile = new File(worldDir, "serverconfig/" + commandJsonName);
+        if (commandJsonFile.exists()) {
+            try (InputStream in = new FileInputStream(commandJsonFile)){
+                String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                //commandJson格式为：
+                //{
+                //  "id_1": {
+                //    "executed": true,
+                //    "effects": {
+                //      "minecraft:sharpness": 5,
+                //      "minecraft:unbreaking": 3
+                //    }
+                //  },
+                //  "id_2": {
+                //    "executed": false,
+                //    "effects": {
+                //      "minecraft:fortune": 2
+                //    }
+                //  }
+                //}
+                JsonObject root = gson.fromJson(json, JsonObject.class);
+                root.entrySet().forEach((Map.Entry<String, JsonElement> entry) -> {
+                    String commandId = entry.getKey();
+                    JsonObject commandObj = entry.getValue().getAsJsonObject();
+                    boolean executed = commandObj.get("executed").getAsBoolean();
+                    JsonObject effectsObj = commandObj.getAsJsonObject("effects");
+                    Map<Enchantment, Integer> effects = new HashMap<>();
+                    effectsObj.entrySet().forEach((Map.Entry<String, JsonElement> entry2) -> {
+                        String[] split = entry2.getKey().split(":");
+                        effects.put(ForgeRegistries.ENCHANTMENTS.getValue(ResourceLocation.
+                                fromNamespaceAndPath(split[0],split[1])),entry2.getValue().getAsInt());
+
+                    });
+                    ICommand command = new EnchCommand(effects,executed);
+                    COMMANDS.put(commandId,command);
+                });
+            } catch (IOException ignored) {
+            }
+        } else {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(commandJsonFile))){
+                bw.write(gson.toJson(new JsonObject()));
+            } catch (IOException ignored) {
+                LOGGER.warn("没有生成指令信息json文件");
+            }
+        }
         if (enchJsonFile.exists()) {
             try (InputStream in = new FileInputStream(enchJsonFile)){
                 String json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
@@ -60,7 +105,7 @@ public class JsonToMapDateHandler {
                 root.entrySet().forEach((Map.Entry<String, JsonElement> entry) -> {
                     String[] split = entry.getKey().split(":");
                     SERVER_OVERRIDES.put(ForgeRegistries.ENCHANTMENTS.getValue(ResourceLocation.
-                            fromNamespaceAndPath(split[0],split[1])),Integer.parseInt(entry.getValue().getAsString()));
+                            fromNamespaceAndPath(split[0],split[1])),entry.getValue().getAsInt());
                 });
             } catch (IOException ignored) {
             }
@@ -80,14 +125,41 @@ public class JsonToMapDateHandler {
             }
         }
         if (enchJsonFile.setReadOnly()) {
-            LOGGER.info("json文件保护已开");
+            LOGGER.info("附魔信息json文件保护已开");
+        }
+        if (commandJsonFile.setReadOnly()) {
+            LOGGER.info("指令信息json文件保护已开");
         }
     }
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         if (enchJsonFile.setWritable(true)) {
-            LOGGER.info("json文件保护已关");
+            LOGGER.info("附魔信息json文件保护已关");
         }
+        if (commandJsonFile.setWritable(true)) {
+            LOGGER.info("指令信息json文件保护已关");
+        }
+        // 临时 Map，用来序列化指令信息为json
+        Map<String, Object> jsonMap = new HashMap<>();
+        COMMANDS.forEach((String id,ICommand command) -> {
+            EnchCommand cmd = (EnchCommand) command;
+            Map<String, Integer> effectsMap = new HashMap<>();
+            cmd.effects.forEach((Enchantment enchant, Integer value) -> {
+                ResourceLocation enchantId = ForgeRegistries.ENCHANTMENTS.getKey(enchant);
+                assert enchantId != null;
+                effectsMap.put(enchantId.toString(), value);
+            });
+            Map<String, Object> cmdMap = new HashMap<>();
+            cmdMap.put("executed", cmd.executed);
+            cmdMap.put("effects", effectsMap);
+            jsonMap.put(id, cmdMap);
+        });
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(commandJsonFile))){
+            bw.write(gson.toJson(jsonMap));
+        } catch (IOException ignored) {
+            LOGGER.warn("指令信息json文件写入出现错误");
+        }
+        //写附魔信息json
         HashMap<String, Integer> map = new HashMap<>();
         ForgeRegistries.ENCHANTMENTS.forEach((Enchantment enchant) -> {
             ResourceLocation id = ForgeRegistries.ENCHANTMENTS.getKey(enchant);

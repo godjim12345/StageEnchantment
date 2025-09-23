@@ -14,12 +14,17 @@ import java.util.Map;
 /// json的格式不重要，完全存储需要的值，便于读写即可。
 public class EnchCommand implements ICommand {
 
-    private final Map<Enchantment, Integer> effects;
-    private boolean executed;
+    public final Map<Enchantment, Integer> effects;
+    public boolean executed;
 
     public EnchCommand() {
         this.effects = new HashMap<>();
         this.executed = false;
+    }
+
+    public EnchCommand(Map<Enchantment, Integer> effects, boolean executed) {
+        this.effects = effects;
+        this.executed = executed;
     }
 
     //执行方法

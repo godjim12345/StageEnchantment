@@ -25,7 +25,7 @@ public class SECommands {
         dispatcher.register(
                 Commands.literal(StageEnchantment.MODID)
                         // fastChange 分支（与 command 并列）
-                        .then(Commands.literal("fastChange")
+                        .then(Commands.literal("fastFunc")
                                 .then(Commands.argument("enchantment", ResourceLocationArgument.id())
                                         .suggests((context, builder) ->
                                                 SharedSuggestionProvider.suggestResource(
@@ -35,6 +35,7 @@ public class SECommands {
                                         )
                                         // add 分支
                                         .then(Commands.literal("add")
+                                                .requires(source -> source.hasPermission(2))
                                                 .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
                                                         .executes(context -> {
                                                             ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
@@ -60,6 +61,7 @@ public class SECommands {
                                         )
                                         // set 分支
                                         .then(Commands.literal("set")
+                                                .requires(source -> source.hasPermission(2))
                                                 .then(Commands.argument("value", IntegerArgumentType.integer(1, 255))
                                                         .executes(context -> {
                                                             ResourceLocation enchantmentId = ResourceLocationArgument.getId(context, "enchantment");
@@ -106,6 +108,7 @@ public class SECommands {
                         )
                         // command 分支（与 fastChange 并列）
                         .then(Commands.literal("command")
+                                .requires(source -> source.hasPermission(2))
                                 .then(Commands.literal("create")
                                         .then(Commands.argument("id", StringArgumentType.string())
                                                 .executes(context -> {
